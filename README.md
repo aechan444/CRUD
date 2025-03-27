@@ -1,29 +1,23 @@
-import { AppDataSource } from "../data-source";
-import { Exam } from "../entities/Exam";
-import { Request, Response } from "express";
-
-const examRepository = AppDataSource.getRepository(Exam);
-
-// UPDATE EXAM BY ID
-export const updateExam = async (req: Request, res: Response) => {
+export const updateExam = (req: Request, res: Response) => {
     try {
         const examId = parseInt(req.params.id);
-        const { name, date, subject } = req.body;
+        const { subject, date, duration } = req.body;
 
-        // Check if the exam exists
-        const exam = await examRepository.findOneBy({ id: examId });
-        if (!exam) {
+        // Find the exam in the array
+        const examIndex = exams.findIndex((exam) => exam.id === examId);
+
+        if (examIndex === -1) {
             return res.status(404).json({ message: "Exam not found" });
         }
 
-        // Update fields if provided
-        if (name) exam.name = name;
-        if (date) exam.date = date;
-        if (subject) exam.subject = subject;
+        // Update only provided fields
+        if (subject) exams[examIndex].subject = subject;
+        if (date) exams[examIndex].date = date;
+        if (duration) exams[examIndex].duration = duration;
 
-        await examRepository.save(exam);
-        res.json({ message: "Exam updated successfully", exam });
+        res.json({ message: "Exam updated successfully", exam: exams[examIndex] });
     } catch (error) {
-        res.status(500).json({ message: "Error updating exam", error: error.message });
+        console.error("Error updating exam:", error);
+        res.status(500).json({ message: "An error occurred while updating the exam" });
     }
 };
